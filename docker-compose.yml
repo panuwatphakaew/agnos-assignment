@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./data/nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - golang
+
+  golang:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DB_URL=${DB_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      # Make sure to provide a .env file with DB_URL and JWT_SECRET variables
+      # Example .env:
+      # DB_URL=postgres://postgres:password@postgres:5432/postgres?sslmode=disable
+      # JWT_SECRET=secret
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
